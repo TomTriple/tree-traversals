@@ -27,19 +27,20 @@
 
 (ns env-utils)
 
-  (defn nth-arg-is
-    "Returns true of the cmd argument at pos *pos* equals *expected*"
-    [pos expected]
-    (= (nth *command-line-args* pos) expected))
+  (def env-arg (first *command-line-args*))
 
-  (defn env-is
-    "Returns true if the env argument equals *env*"
-    [env]
-    (nth-arg-is 0 env))
+  (def env
+      (cond
+        (some #(= env-arg %) (list "test", "T")) :test
+        (some #(= env-arg %) (list "production", "prod", "P")) :prod
+        :else
+          (do
+            (println "Missing environment arg")
+            (System/exit -1))))
 
   (defn is
     [ & env-with-action]
-    ((some #(if (= (first %) "test") (second %))
+    ((some #(if (= (first %) env) (second %))
        (partition 2 env-with-action))))
 
 
@@ -77,10 +78,7 @@
 
 
 (println (env/is
-  "test" run-tests
-  "prod" run-production))
-
-
-
+  :test run-tests
+  :prod run-production))
 
 
