@@ -37,19 +37,15 @@
     [env]
     (nth-arg-is 0 env))
 
-  (defmacro when-is
-    "Only evaluates *env-action* when the env argument equals *env-type*. Each env has a short version e.g. test <=> t <=> T."
-    [env-type env-action]
-    (and (= env-type :test) (or (env-is "test") (env-is "t"))
-      `(~env-action)))
+  (defn is
+    [ & env-with-action]
+    ((some #(if (= (first %) "test") (second %))
+       (partition 2 env-with-action))))
 
 
 (ns tree-traversals)
-
   (alias 'test 'testing)
   (alias 'env 'env-utils)
-  ;(refer 'testing)
-  ;(refer 'env-utils)
 
   (def tree (atom nil))
 
@@ -77,9 +73,12 @@
   (insert-node 12)
   (test/assert-equal 12 (get-in @tree [:right :right :value])))
 
+(defn run-production [] "asdf")
 
-; TODO: cond-macro
-(env/when-is :test run-tests)
+
+(println (env/is
+  "test" run-tests
+  "prod" run-production))
 
 
 
