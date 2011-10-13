@@ -1,7 +1,7 @@
+(set! *warn-on-reflection* true)
 
 (ns testing)
 
-  ; TODO: Gather statistics
   (defn- eval-assert
     "Delegation target for all future assert functions."
     [assertion]
@@ -29,19 +29,25 @@
 
   (def env-arg (first *command-line-args*))
 
-  (def env
-      (cond
-        (some #(= env-arg %) (list "test", "T")) :test
-        (some #(= env-arg %) (list "production", "prod", "P")) :prod
-        :else
-          (do
-            (println "Missing environment arg")
-            (System/exit -1))))
+  (def env (cond
+    (some #(= env-arg %) (list "test", "T")) :test
+    (some #(= env-arg %) (list "production", "prod", "P")) :prod
+    :else
+      (do
+        (println "Missing environment arg")
+        (System/exit -1))))
 
-  (defn is
+  (defn mode
     [ & env-with-action]
     ((some #(if (= (first %) env) (second %))
        (partition 2 env-with-action))))
+
+  (defmacro after-initialize
+    [ & arg]
+    `(let [bye# "run finished!"]
+      (println "starting with env: " env/env)
+      ~@arg
+      (println bye#)))
 
 
 (ns tree-traversals)
@@ -63,6 +69,9 @@
       (swap! tree insert-fn)))
 
 
+  ; todo: depth-first, breath-first, in- post- preorder
+
+
 (defn run-tests []
   (test/assert-nil @tree)
   (insert-node 5)
@@ -74,11 +83,15 @@
   (insert-node 12)
   (test/assert-equal 12 (get-in @tree [:right :right :value])))
 
-(defn run-production [] "asdf")
+
+(defn run-production []
+  (println "running in production mode..."))
+
+(env/after-initialize
+  (env/mode
+    :test run-tests
+    :prod run-production))
 
 
-(println (env/is
-  :test run-tests
-  :prod run-production))
 
 
