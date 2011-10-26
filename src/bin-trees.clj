@@ -69,7 +69,24 @@
       (swap! tree insert-fn)))
 
 
-  ; todo: depth-first, breath-first, in- post- preorder
+  ; "Finds the first node which value matches *search-val*. Uses a binary search which could run in O(log n) but currently
+  ; only runs in O(n) => The tree degrades to a linked list in the case the inserted values were already sorted. "
+  ; todo: multimethod
+  ;(defmulti find-binary-search class)
+
+  (defn find-binary-search
+    [search-val]
+    (loop [node @tree]
+      (cond
+        (= search-val (:value node)) node
+        (< search-val (:value node))
+          (recur (:left node))
+        :else
+          (recur (:right node)))))
+
+
+
+  ; todo: depth-first, breadth-first, in- post- preorder, msp, kruskal usw.
 
 
 (defn run-tests []
@@ -81,7 +98,8 @@
   (insert-node 8)
   (test/assert-equal 8 (get-in @tree [:right :value]))
   (insert-node 12)
-  (test/assert-equal 12 (get-in @tree [:right :right :value])))
+  (test/assert-equal 12 (get-in @tree [:right :right :value]))
+  (test/assert-equal (:value (find-binary-search 12)) 12))
 
 
 (defn run-production []
