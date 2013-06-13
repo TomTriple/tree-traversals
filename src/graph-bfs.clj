@@ -39,7 +39,7 @@
       tree
       (do
         ;(println "discovered: " (peek q))
-        (let [adj (vec (for [e (:edges ((peek q) graph)) :when (not (contains? states (:target e)))] (:target e)))]
+        (let [adj (vec (for [e (:edges ((peek q) graph)) :when  (not (contains? states (:target e)))] (:target e)))]
           (recur
             (vec
               (flatten (cons adj (pop q))))
@@ -47,7 +47,17 @@
             (reduce #(assoc %1 %2 (peek q)) tree adj)))))))
 
 
-(defn find-path
+(defn graph-dfs [graph start]
+  (loop [states {start :discovered}
+         node start]
+    (println "discovered: " node)
+    (doseq [e (:edges (node graph)) :when (not (contains? states (:target e)))]
+      (recur
+        (assoc states (:target e) :discovered)
+        (:target e)))))
+
+
+(defn bfs-find-path
   "Finds the shortests path from :start to :end."
   [tree start end]
   (loop [start start
@@ -72,9 +82,12 @@
   :rosenheim :wasserburg 30
 )
 
-(let [graph-bfs-tree (graph-bfs @graph :bra)]
-  (println
-    (find-path graph-bfs-tree :wasserburg :bra)))
+(graph-dfs @graph :bra)
+
+
+;(let [graph-bfs-tree (graph-bfs @graph :bra)]
+;  (println
+;    (bfs-find-path graph-bfs-tree :wasserburg :bra)))
 
 
 
