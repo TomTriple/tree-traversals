@@ -1,9 +1,7 @@
 (defrecord Edge [weight target])
 (defrecord Node [label edges])
 
-
 (def graph (atom {}))
-
 
 (defn node-connect
   "Connects the start node :src to node :dst with edge weight :weight. This fn supports arity overloading."
@@ -38,7 +36,7 @@
     (if-not (seq q)
       tree
       (do
-        ;(println "discovered: " (peek q))
+        (println "discovered: " (peek q))
         (let [adj (vec (for [e (:edges ((peek q) graph)) :when  (not (contains? states (:target e)))] (:target e)))]
           (recur
             (vec
@@ -47,14 +45,17 @@
             (reduce #(assoc %1 %2 (peek q)) tree adj)))))))
 
 
-(defn graph-dfs [graph start]
-  (loop [states {start :discovered}
-         node start]
-    (println "discovered: " node)
-    (doseq [e (:edges (node graph)) :when (not (contains? states (:target e)))]
-      (recur
-        (assoc states (:target e) :discovered)
-        (:target e)))))
+(defn graph-dfs
+  "Performs a depth first search (dfs) on :graph starting at :start. "
+  [start]
+  (loop [stack [start]
+         states {start :discovered}]
+    (when-let [_ (seq stack)]
+      (println "discovered: " (first stack))
+      (let [adj (vec (for [e (:edges ((first stack) @graph)) :when (not (contains? states (:target e)))] (:target e)))]
+        (recur
+          (flatten (conj adj (rest stack)))
+          (reduce #(assoc %1 %2 :discovered) states adj))))))
 
 
 (defn bfs-find-path
@@ -82,12 +83,14 @@
   :rosenheim :wasserburg 30
 )
 
-(graph-dfs @graph :bra)
+(println "depth first search: ")
+(graph-dfs :grhh)
 
+(println "breadth first search: ")
 
-;(let [graph-bfs-tree (graph-bfs @graph :bra)]
-;  (println
-;    (bfs-find-path graph-bfs-tree :wasserburg :bra)))
+(let [graph-bfs-tree (graph-bfs @graph :bra)]
+  (println
+    (str "path from :wasserburg to :bra -> " (bfs-find-path graph-bfs-tree :wasserburg :bra))))
 
 
 
